@@ -19,43 +19,43 @@ type MemStore[K comparable, V any] struct {
 	store map[K]V
 }
 
-// todo: initialize a mem store
 func NewMemStore[K comparable, V any]() Store[K, V] {
-	return nil
+	return &MemStore[K, V]{store: make(map[K]V)}
 }
 
-// todo: implement
 func (s *MemStore[K, V]) Find(id K) (*V, bool) {
+	if value, ok := s.store[id]; ok {
+		return &value, true
+	}
 	return nil, false
 }
 
 func (s *MemStore[K, V]) Store(id K, value V) (*V, error) {
 	s.store[id] = value
-
 	return &value, nil
 }
 
-// a MemStore that will only store a value if it passes the given `validate()` function
+// MemStoreWithValidation a MemStore that will only store a value if it passes the given `validate()` function
 type MemStoreWithValidation[K comparable, V any] struct {
 	*MemStore[K, V]
 	validate func(V) error
 }
 
-// todo: implement
 func NewMemStoreWithValidation[K comparable, V any](validator func(val V) error) Store[K, V] {
-	return nil
+	return &MemStoreWithValidation[K, V]{
+		&MemStore[K, V]{store: make(map[K]V)},
+		validator,
+	}
 }
 
-// todo: implement
 func (s *MemStoreWithValidation[K, V]) Find(id K) (*V, bool) {
-	return nil, false
+	return s.MemStore.Find(id)
 }
 
-// todo: finish implementation
 func (s *MemStoreWithValidation[K, V]) Store(id K, value V) (*V, error) {
 	if err := s.validate(value); err != nil {
 		return nil, fmt.Errorf("value is invalid: %w", err)
 	}
 
-	return nil, nil
+	return s.MemStore.Store(id, value)
 }
